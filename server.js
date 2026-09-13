@@ -37,7 +37,7 @@ const upload = multer({
 });
 
 // Assets the login page itself needs, reachable before authentication.
-const PUBLIC_PATHS = new Set(["/login.html", "/styles.css"]);
+const PUBLIC_PATHS = new Set(["/login.html", "/styles.css", "/oauth/ebay/callback"]);
 
 // ---- Auth ----
 function requireAuth(req, res, next) {
@@ -57,6 +57,69 @@ app.post("/api/login", (req, res) => {
 app.post("/api/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
+
+// ---- One-time eBay OAuth handoff ----
+// eBay's developer portal "Get a User Token Here" shortcut only issues a
+// short-lived (~2hr) access token, not a real refresh token. To get the
+// long-lived refresh token our app actually needs, we do the real
+// "authorization code" exchange ourselves. Point your RuName's "auth
+// accepted URL" at this route (via your ngrok/tunnel URL +
+// /oauth/ebay/callback), then visit the "...Sign In (OAuth)" link from the
+// developer portal — eBay redirects your browser here with a `code`, and
+// this route trades it for a refresh token and shows it to you once.
+app.get("/oauth/ebay/callback", async (req, res) => {
+  const code = req.query.code;
+  if (!code) return res.status(400).send("Missing ?code from eBay redirect.");
+  if (!process.env.EBAY_CLIENT_ID || !process.env.EBAY_CLIENT_SECRET || !process.env.EBAY_RUNAME) {
+    return res
+      .status(500)
+      .send("Set EBAY_CLIENT_ID, EBAY_CLIENT_SECRET, and EBAY_RUNAME in .env first, then restart the server.");
+  }
+
+  const basic = Buffer.from(`${process.env.EBAY_CLIENT_ID}:${process.env.EBAY_CLIENT_SECRET}`).toString(
+    "base64"
+  );
+  try {
+    const tokenRes = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${basic}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: process.env.EBAY_RUNAME,
+      }),
+    });
+    const json = await tokenRes.json();
+    if (!tokenRes.ok) {
+      return res.status(500).send(`<pre>${escapeHtml(JSON.stringify(json, null, 2))}</pre>`);
+    }
+    res.send(`
+      <body style="font-family:monospace;background:#0b0c10;color:#f2f2f5;padding:24px;">
+        <h2>eBay token exchange succeeded</h2>
+        <p>Copy the value below into your .env as <b>EBAY_REFRESH_TOKEN</b>, then restart the app. This page will not show it again.</p>
+        <pre style="white-space:pre-wrap;word-break:break-all;background:#1a1c26;padding:12px;border-radius:8px;">${escapeHtml(
+          json.refresh_token
+        )}</pre>
+        <p>Refresh token valid for ~${Math.round((json.refresh_token_expires_in || 0) / 86400)} days from now.</p>
+      </body>
+    `);
+  } catch (err) {
+    res.status(500).send(`Error exchanging code: ${escapeHtml(err.message)}`);
+  }
+});
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[c]));
+}
 
 app.get("/api/session", (req, res) => {
   res.json({ authed: !APP_PASSWORD || !!req.session.authed });

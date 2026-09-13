@@ -23,10 +23,24 @@ If `APP_PASSWORD` is left blank in `.env`, the app skips the sign-in screen.
 ## eBay (real posting)
 
 1. Create a **production** keyset at https://developer.ebay.com/my/keys.
-2. Run through eBay's OAuth "authorization code" consent flow once (in
-   their API Explorer or via a short script) to get a **refresh token**
-   scoped to `sell.inventory`. Refresh tokens are long-lived (~18 months);
-   you don't redo this for every listing.
+2. Get a **refresh token** (long-lived, ~18 months — you don't redo this
+   for every listing). The developer portal's own "Get a User Token Here"
+   shortcut only gives you a short-lived (~2hr) access token, not a real
+   refresh token, so this app does the real OAuth handoff itself:
+   1. Get a public URL for this app running (see step 5 below for the
+      ngrok/tunnel setup — you need it for eBay's image fetching anyway).
+   2. In developer.ebay.com → your keyset → **User Tokens** tab, under
+      "Your eBay Sign-in Settings", edit your RuName and set **"Your auth
+      accepted URL"** to `<your public URL>/oauth/ebay/callback`.
+   3. Put your Client ID, Client Secret, and that RuName's name (not its
+      URL — looks like `Jonah_Quartey-P-...`) into `.env` as
+      `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, `EBAY_RUNAME`, then
+      `npm start` (or restart it).
+   4. Click the **"Your branded eBay Production Sign In (OAuth)"** link
+      shown on that same User Tokens page, sign in, and approve access.
+   5. eBay redirects your browser to `/oauth/ebay/callback`, which
+      exchanges the code and shows you the real refresh token once — copy
+      it into `.env` as `EBAY_REFRESH_TOKEN` and restart the app.
 3. In your eBay seller account, note the IDs for a merchant location and
    your fulfillment/payment/return **business policies** — the Inventory
    API requires all three.
