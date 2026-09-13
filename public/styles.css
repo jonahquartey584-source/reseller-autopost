@@ -273,3 +273,15 @@ body {
   color: var(--text);
   padding: 10px 12px;
 }
+
+.listing-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.delete-btn {
+  color: var(--danger);
+  border-color: var(--danger);
+}

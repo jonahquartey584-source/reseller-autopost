@@ -7,7 +7,7 @@
 // and UNVERIFIED — always do a BROWSER_DRY_RUN=1 pass first and watch it
 // run with BROWSER_HEADLESS=0 before trusting it with a real account.
 const path = require("path");
-const { withBrowser, isDryRun } = require("../browser/session");
+const { withBrowser, isDryRun, blockedResult } = require("../browser/session");
 const { safeFill, safeClick, safeSetFiles } = require("../browser/formHelpers");
 const { autoDescription } = require("./ebay");
 const { resolveDelivery } = require("./delivery");
@@ -18,6 +18,8 @@ async function post(listing) {
   return withBrowser("facebook_marketplace", async (page) => {
     const warnings = [];
     await page.goto(CREATE_URL, { waitUntil: "domcontentloaded" });
+    const blocked = await blockedResult(page, "facebook_marketplace");
+    if (blocked) return blocked;
 
     const photoInput = page.locator('input[type="file"]').first();
     const photoPaths = (listing.photos || []).map((f) =>

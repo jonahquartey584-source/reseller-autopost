@@ -1,5 +1,6 @@
 require("dotenv").config();
 const path = require("path");
+const fs = require("fs");
 const crypto = require("crypto");
 const express = require("express");
 const session = require("express-session");
@@ -209,6 +210,26 @@ app.post("/api/listings/:id/targets/:marketplace/cancel", (req, res, next) => {
     });
     if (!updated) return res.status(404).json({ error: "Not found" });
     res.json(updated);
+  })().catch(next);
+});
+
+// Removes the listing from this app only. Anything already published on a
+// marketplace stays up — those have to be ended on the marketplace itself,
+// so we say so rather than implying this pulls a live listing down.
+app.delete("/api/listings/:id", (req, res, next) => {
+  (async () => {
+    const removed = await store.remove(req.params.id);
+    if (!removed) return res.status(404).json({ error: "Not found" });
+
+    for (const filename of removed.photos || []) {
+      fs.unlink(path.join(__dirname, "uploads", filename), () => {});
+    }
+
+    const published = (removed.targets || []).filter((t) => t.status === "posted");
+    res.json({
+      ok: true,
+      stillLiveOn: published.map((t) => t.marketplace),
+    });
   })().catch(next);
 });
 

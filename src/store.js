@@ -68,4 +68,13 @@ async function updateTarget(id, marketplace, mutate) {
   });
 }
 
-module.exports = { getAll, getById, add, update, updateTarget };
+async function remove(id) {
+  const listings = load();
+  const idx = listings.findIndex((l) => l.id === id);
+  if (idx === -1) return null;
+  const [removed] = listings.splice(idx, 1);
+  await save(listings);
+  return removed;
+}
+
+module.exports = { getAll, getById, add, update, updateTarget, remove };

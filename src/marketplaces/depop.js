@@ -5,7 +5,7 @@
 // BROWSER_DRY_RUN=1 pass first, ideally with BROWSER_HEADLESS=0 so you can
 // watch it fill the form before it ever submits for real.
 const path = require("path");
-const { withBrowser, isDryRun } = require("../browser/session");
+const { withBrowser, isDryRun, blockedResult } = require("../browser/session");
 const { safeFill, safeClick, safeSetFiles } = require("../browser/formHelpers");
 const { autoDescription } = require("./ebay");
 const { resolveDelivery } = require("./delivery");
@@ -16,6 +16,8 @@ async function post(listing) {
   return withBrowser("depop", async (page) => {
     const warnings = [];
     await page.goto(CREATE_URL, { waitUntil: "domcontentloaded" });
+    const blocked = await blockedResult(page, "depop");
+    if (blocked) return blocked;
 
     const photoInput = page.locator('input[type="file"]').first();
     const photoPaths = (listing.photos || []).map((f) =>

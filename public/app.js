@@ -172,9 +172,14 @@
         listing.size ? ` · ${escapeHtml(listing.size)}` : ""
       }</p>
           ${targets}
-          <button class="btn btn-ghost social-btn" data-id="${listing.id}" ${published ? "" : "disabled"}>
-            Choose photo &amp; create social post
-          </button>
+          <div class="listing-actions">
+            <button class="btn btn-ghost social-btn" data-id="${listing.id}" ${published ? "" : "disabled"}>
+              Choose photo &amp; create social post
+            </button>
+            <button class="btn btn-ghost delete-btn" data-id="${listing.id}" data-published="${published}" data-name="${escapeHtml(listing.name)}">
+              Delete
+            </button>
+          </div>
           ${!published ? '<p class="muted small">Social posting unlocks after a marketplace listing is published.</p>' : ""}
           <div class="social-caption" id="caption-${listing.id}" hidden></div>
         </div>
@@ -186,6 +191,25 @@
       el.addEventListener("click", async (e) => {
         e.preventDefault();
         await fetch(`/api/listings/${el.dataset.id}/targets/${el.dataset.m}/cancel`, { method: "POST" });
+        loadListings();
+      });
+    });
+
+    listingsEl.querySelectorAll(".delete-btn").forEach((el) => {
+      el.addEventListener("click", async () => {
+        // Be explicit that this only clears it here — a published listing
+        // stays up on the marketplace and has to be ended there.
+        const warning =
+          el.dataset.published === "true"
+            ? "\n\nThis one is already published. Deleting removes it from this app only — the live marketplace listing stays up and must be ended on the marketplace itself."
+            : "";
+        if (!confirm(`Delete "${el.dataset.name}"?${warning}`)) return;
+        const res = await fetch(`/api/listings/${el.dataset.id}`, { method: "DELETE" });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(err.error || "Could not delete that listing.");
+          return;
+        }
         loadListings();
       });
     });
