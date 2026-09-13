@@ -1,0 +1,22 @@
+{
+  "name": "reseller-autopost",
+  "version": "1.0.0",
+  "description": "Cross-post resale listings to eBay (official API) and Facebook Marketplace, Vinted, Depop (browser automation).",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "login": "node scripts/login.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "multer": "^2.0.1",
+    "playwright": "^1.47.0"
+  }
+}

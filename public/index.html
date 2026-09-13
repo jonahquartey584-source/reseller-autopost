@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reseller Autopost</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="dot" id="statusDot"></span> Reseller Autopost</div>
+    <button class="btn btn-ghost" id="signOutBtn">Sign out</button>
+  </header>
+
+  <p class="notice">
+    Browser marketplaces (Facebook Marketplace, Vinted, Depop) drive your own logged-in
+    session and post as soon as they're due. eBay posts through its official API.
+    Everything else in the list below is not wired up yet.
+  </p>
+
+  <main class="container">
+    <section class="card">
+      <h2>1. Post to marketplaces</h2>
+      <p class="muted">Create your marketplace listing here. Social captions are a separate step after a listing is published.</p>
+
+      <form id="listingForm">
+        <label class="dropzone" id="dropzone">
+          <input type="file" id="photos" name="photos" accept="image/*" multiple hidden />
+          <strong>Drop photos here or click to choose</strong>
+          <span class="muted">Add up to 12 photos.</span>
+          <div id="photoPreview" class="photo-preview"></div>
+        </label>
+
+        <div class="field">
+          <label for="name">Product name <span class="req">required</span></label>
+          <input id="name" name="name" placeholder="Vintage Nike Air Max 90 Infrared" required />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="price">Price</label>
+            <input id="price" name="price" type="number" step="0.01" placeholder="145" />
+          </div>
+          <div class="field">
+            <label for="deliveryPrice">Delivery price</label>
+            <input id="deliveryPrice" name="deliveryPrice" type="number" step="0.01" placeholder="e.g. 3.99" />
+            <p class="hint">0 for free delivery, blank for marketplace default rates.</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="currency">Currency</label>
+            <select id="currency" name="currency">
+              <option>GBP</option>
+              <option>USD</option>
+              <option>EUR</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="brand">Brand</label>
+            <input id="brand" name="brand" placeholder="Nike" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="size">Size</label>
+            <input id="size" name="size" placeholder="US 10.5" />
+          </div>
+          <div class="field">
+            <label for="colour">Colour</label>
+            <input id="colour" name="colour" placeholder="White / Infrared" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="condition">Condition</label>
+            <input id="condition" name="condition" placeholder="Excellent — worn twice" />
+          </div>
+          <div class="field">
+            <label for="category">Category</label>
+            <input id="category" name="category" placeholder="Sneakers" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="quantity">Quantity</label>
+          <input id="quantity" name="quantity" type="number" min="1" value="1" />
+        </div>
+
+        <div class="field">
+          <label for="tags">Tags <span class="muted">comma separated — become hashtags</span></label>
+          <input id="tags" name="tags" placeholder="airmax, vintage, sneakers, streetwear" />
+        </div>
+
+        <div class="field">
+          <label for="description">Description <span class="muted">left blank, one gets written from the fields above</span></label>
+          <textarea id="description" name="description" placeholder="Optional — leave empty to auto-generate"></textarea>
+        </div>
+
+        <h3 class="section-title">Choose marketplaces</h3>
+        <div id="marketplaceStatus" class="muted small"></div>
+        <div id="marketplaceGrid" class="marketplace-grid"></div>
+
+        <div class="field">
+          <label for="postingTime">Posting time</label>
+          <select id="postingTime" name="postingTime">
+            <option value="now">Post now</option>
+            <option value="schedule">Schedule</option>
+          </select>
+          <input type="datetime-local" id="scheduledAt" name="scheduledAt" hidden />
+          <p class="hint">Scheduled posts run while this app is running. If it was offline, they run at next startup.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Post to marketplaces</button>
+        <p class="error" id="formError" hidden></p>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>2. Review listings &amp; choose social posts</h2>
+        <button class="btn btn-ghost" id="refreshBtn">Refresh</button>
+      </div>
+      <div id="listings"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
