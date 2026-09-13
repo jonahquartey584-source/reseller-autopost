@@ -18,11 +18,20 @@ const fs = require("fs");
 const path = require("path");
 const { sessionPath } = require("../src/browser/session");
 
+// Base domains to match against — a cookie matches if its own domain is
+// this exact domain OR any subdomain of it (e.g. "www.depop.com" and
+// ".accounts.depop.com" both match base domain "depop.com").
 const DOMAINS = {
-  facebook_marketplace: [".facebook.com", "facebook.com"],
-  vinted: [".vinted.co.uk", "vinted.co.uk", ".vinted.com", "vinted.com"],
-  depop: [".depop.com", "depop.com"],
+  facebook_marketplace: ["facebook.com"],
+  vinted: ["vinted.co.uk", "vinted.com"],
+  depop: ["depop.com"],
 };
+
+function matchesDomain(cookieDomain, baseDomain) {
+  const d = cookieDomain.replace(/^\./, "").toLowerCase();
+  const base = baseDomain.toLowerCase();
+  return d === base || d.endsWith("." + base);
+}
 
 function mapSameSite(value) {
   if (!value) return "Lax";
@@ -63,7 +72,7 @@ function main() {
   const allCookies = Array.isArray(raw) ? raw : raw.cookies || [];
 
   const relevant = allCookies.filter((c) =>
-    DOMAINS[marketplace].some((d) => c.domain === d || c.domain === "." + d.replace(/^\./, ""))
+    DOMAINS[marketplace].some((base) => matchesDomain(c.domain, base))
   );
 
   if (!relevant.length) {
