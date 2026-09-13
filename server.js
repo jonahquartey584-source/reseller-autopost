@@ -12,6 +12,7 @@ const { autoDescription } = require("./src/marketplaces/ebay");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "127.0.0.1";
 const APP_PASSWORD = process.env.APP_PASSWORD || "";
 
 app.use(express.json());
@@ -230,7 +231,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message || "Server error" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Reseller Autopost running at http://127.0.0.1:${PORT}`);
+// Bind explicitly to loopback. Two things depend on this: the URL we
+// print below is then guaranteed to be the listener we actually started
+// (binding the default "::" wildcard can silently start on IPv6 while a
+// different app holds IPv4 127.0.0.1:3000, so the printed URL reaches the
+// wrong server), and this app — which holds live marketplace sessions and
+// eBay credentials — stays unreachable from other machines on the network.
+app.listen(PORT, HOST, () => {
+  console.log(`Reseller Autopost running at http://${HOST}:${PORT}`);
   scheduler.start();
 });
