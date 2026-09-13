@@ -8,6 +8,13 @@ since none of them offer a public listing API for individual sellers.
 Etsy, Shopify, Poshmark, Mercari, and OfferUp are shown in the UI as
 "coming soon" — they are not wired up in this build.
 
+## Running it
+
+Double-click **`start.command`** in Finder. It frees port 3000, updates,
+checks what is connected, starts the server and opens the page.
+
+(If macOS refuses to open it the first time: right-click → Open → Open.)
+
 ## Setup
 
 ```bash
