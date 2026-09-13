@@ -10,6 +10,7 @@ const path = require("path");
 const { withBrowser, isDryRun } = require("../browser/session");
 const { safeFill, safeClick, safeSetFiles } = require("../browser/formHelpers");
 const { autoDescription } = require("./ebay");
+const { resolveDelivery } = require("./delivery");
 
 const CREATE_URL = "https://www.facebook.com/marketplace/create/item";
 
@@ -43,6 +44,9 @@ async function post(listing) {
         `Set Condition to "${listing.condition}" manually — Facebook's condition picker is not automated yet.`
       );
     }
+
+    const delivery = resolveDelivery("facebook_marketplace", listing);
+    if (delivery.note) warnings.push(delivery.note);
 
     if (isDryRun()) {
       return {

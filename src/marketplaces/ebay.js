@@ -8,6 +8,8 @@
 //   3. POST /sell/inventory/v1/offer                    (price, policies)
 //   4. POST /sell/inventory/v1/offer/{offerId}/publish   (goes live)
 
+const { resolveDelivery } = require("./delivery");
+
 const REQUIRED_ENV = [
   "EBAY_CLIENT_ID",
   "EBAY_CLIENT_SECRET",
@@ -170,10 +172,12 @@ async function post(listing) {
   );
 
   const listingId = publishRes.listingId;
+  const delivery = resolveDelivery("ebay", listing);
   return {
     status: "posted",
     externalId: listingId,
     url: listingId ? `https://www.ebay.com/itm/${listingId}` : undefined,
+    message: delivery.note || null,
   };
 }
 

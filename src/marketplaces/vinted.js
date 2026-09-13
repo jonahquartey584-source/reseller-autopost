@@ -8,6 +8,7 @@ const path = require("path");
 const { withBrowser, isDryRun } = require("../browser/session");
 const { safeFill, safeClick, safeSetFiles } = require("../browser/formHelpers");
 const { autoDescription } = require("./ebay");
+const { resolveDelivery } = require("./delivery");
 
 function domain() {
   return process.env.VINTED_DOMAIN || "www.vinted.co.uk";
@@ -45,6 +46,9 @@ async function post(listing) {
     if (listing.condition) {
       warnings.push(`Set Condition to "${listing.condition}" manually.`);
     }
+
+    const delivery = resolveDelivery("vinted", listing);
+    if (delivery.note) warnings.push(delivery.note);
 
     if (isDryRun()) {
       return {

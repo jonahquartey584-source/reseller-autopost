@@ -8,6 +8,7 @@ const path = require("path");
 const { withBrowser, isDryRun } = require("../browser/session");
 const { safeFill, safeClick, safeSetFiles } = require("../browser/formHelpers");
 const { autoDescription } = require("./ebay");
+const { resolveDelivery } = require("./delivery");
 
 const CREATE_URL = "https://www.depop.com/products/new";
 
@@ -31,12 +32,17 @@ async function post(listing) {
       "Description"
     );
     await safeFill(page.getByLabel(/^price/i), String(listing.price), warnings, "Price");
-    await safeFill(
-      page.getByLabel(/delivery|shipping/i),
-      listing.deliveryPrice,
-      warnings,
-      "Delivery price"
-    );
+    const delivery = resolveDelivery("depop", listing);
+    if (delivery.apply) {
+      await safeFill(
+        page.getByLabel(/delivery|shipping/i),
+        delivery.value,
+        warnings,
+        "Delivery price"
+      );
+    } else if (delivery.note) {
+      warnings.push(delivery.note);
+    }
     await safeFill(page.getByLabel(/brand/i), listing.brand, warnings, "Brand");
     await safeFill(page.getByLabel(/size/i), listing.size, warnings, "Size");
 
