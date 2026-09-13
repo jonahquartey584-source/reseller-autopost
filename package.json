@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "login": "node scripts/login.js"
+    "login": "node scripts/login.js",
+    "import-cookies": "node scripts/import-cookies.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

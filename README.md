@@ -56,6 +56,18 @@ session via [Playwright](https://playwright.dev).
    then press Enter in the terminal — your session is saved to
    `sessions/<marketplace>.json`.
 
+   **If a site blocks the automated browser from logging in at all**
+   (Depop and others increasingly detect and reject Playwright-controlled
+   browsers, even for a real login), use the cookie-import path instead —
+   it never automates the login step:
+   ```bash
+   npm run import-cookies -- depop ~/Downloads/depop-cookies.json
+   ```
+   1. Install the "Cookie-Editor" extension in your normal Chrome.
+   2. Log into the marketplace normally, in that normal browser.
+   3. Click Cookie-Editor → Export → Export as JSON, save the file.
+   4. Run the command above with the path to that file.
+
 2. **Dry-run first.** Leave `BROWSER_DRY_RUN=1` (the default) and set
    `BROWSER_HEADLESS=0` so you can watch the app fill in a listing form
    without ever clicking submit. Selectors on these sites are best-effort
